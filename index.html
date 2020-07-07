@@ -29,8 +29,8 @@
 		        
         <p>Изменения, сделанные в настройках выше, будут сохранены для текущего браузера. Все изменения и обработка происходят локально, на сайт ничего не загружается.</p>
 
-		<button onclick="triggerExport()" id="btnExport" disabled>Вывести в Word</button>
-		<p>Функцией «Вывести в Word» пользоваться пока нецелесообразно (очень кривой документ). Для копирования в вордовскую таблицу лучше всего работает такой метод: выделить сгенерированную таблицу, скопировать, вставить в блокнот, выделить всё (Ctrl+A), вырезать (Ctrl+X), выбрать подходящие ячейки в отчёте и вставить.</p>
+		<button onclick="triggerExport()" id="btnExport" disabled>Вывести в Word</button>   <button onclick="copyTableToClipboard()" id="btnCopy" disabled>Скопировать таблицу в буфер обмена</button>
+		<p>Функцией «Вывести в Word» пользоваться пока нецелесообразно (очень кривой документ). Для копирования в вордовскую таблицу лучше всего работает такой метод: выделить сгенерированную таблицу, скопировать (кнопка выше производит эти два шага), вставить в блокнот, выделить всё (Ctrl+A), вырезать (Ctrl+X), выбрать подходящие ячейки в отчёте и вставить.</p>
 		
         <div id="output">
             <table id="stat"></table>
@@ -67,6 +67,8 @@
             let btnRefresh = document.getElementById("btnRefresh")
 			let btnExport  = document.getElementById("btnExport")
 			let output	   = document.getElementById("output")
+            let tblOut = document.getElementById('stat');
+
 
             function Refresh() {
                 workbooks = []
@@ -267,8 +269,6 @@
 
             function f_p(num) {return num.toFixed(presc).toString().replace("." , ",") };
 
-            let tblOut = document.getElementById('stat');
-
             tblOut.innerHTML = `
                 ${res_subj_q.map(s => {
                     let c_s_def = subjects.def[subjects.ids[s.s_id]];
@@ -331,7 +331,23 @@
 
             ComputeAndOutput(data_array, criteria, subjects, presc)
 			btnExport.disabled  = false;
+            btnCopy.disabled    = false;
 
+        }
+
+        function copyTableToClipboard() {
+            if (tblOut.innerHTML) {
+                let sel = window.getSelection()
+                sel.removeAllRanges()
+                let range = new Range()
+                let r_container = tblOut.firstElementChild;
+                console.log(r_container)
+                range.setStartBefore(r_container.firstElementChild)
+                range.setEndAfter(r_container.lastElementChild.lastElementChild)
+                sel.addRange(range)
+                document.execCommand('copy')
+                sel.removeAllRanges()
+            }
         }
 		
 		function exportToWord(tag) {
