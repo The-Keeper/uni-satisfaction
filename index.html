@@ -42,25 +42,25 @@
             let workbooks = []
 
             function readmultifiles(files) {
-            let reader = new FileReader();  
-            function readFile(index) {
-                if( index >= files.length ) {
-                   main();
-                   return;
-                 }
-                let file = files[index];
-                reader.onload = function(e) {  
-                // get file content  
-                let data = new Uint8Array(e.target.result);
-                let workbook = XLSX.read(data, { type: "array" });
+                let reader = new FileReader();  
+                function readFile(index) {
+                    if( index >= files.length ) {
+                    main();
+                    return;
+                    }
+                    let file = files[index];
+                    reader.onload = function(e) {  
+                    // get file content  
+                    let data = new Uint8Array(e.target.result);
+                    let workbook = XLSX.read(data, { type: "array" });
 
-                workbooks.push(workbook)
+                    workbooks.push(workbook)
 
-                readFile(index+1);
+                    readFile(index+1);
+                    }
+                    reader.readAsArrayBuffer(file);
                 }
-                reader.readAsArrayBuffer(file);
-            }
-            readFile(0);
+                readFile(0);
             }
             
             let fileInput = document.getElementById("input_files")
@@ -132,11 +132,6 @@
                     ];
             };
 
-
-			//let range = XLSX.utils.decode_range(crit_def_range);
-			let name_offset = [1, 0]; // сдвиг, где находится имя колонки
-			//console.log("RANGE", range);
-
 			function apply_offset(coords, offset) {
 				return { c: coords.c + offset.c, r: coords.r + offset.r };
             }
@@ -186,21 +181,11 @@
 
             function readWSData(sheet, criteria, subjects, keys_order) {
                 if (criteria.variable_dimension !== subjects.variable_dimension) {
-                /*    let range = {s: {c: 0, r: 0}, e: {c: 0, r: 0}}
-        
-                    if (criteria.variable_dimension == 'r') {
-                        range = {s: {c: subjects.range.s.c, r: criteria.range.s.r}, e: {c: subjects.range.e.c, r: criteria.range.e.r}}
-                    } else {
-                        range = {s: {c: criteria.range.s.c, r: subjects.range.s.r}, e: {c: criteria.range.e.c, r: subjects.range.e.r}}
-                    }
-
-                */
-                
 
                 let reversed_addr = criteria.variable_dimension==='r';
 
-                let dict = {}
-                let data = []
+                let dict = {}       // словарь значений внутри пересечения критерия и дисцпилины
+                let data = []       // данные на выходе
 
                 let i = {}
                // let current_criterion_idx = 0, current_subject_idx = 0;
@@ -283,7 +268,7 @@
             function f_p(num) {return num.toFixed(presc).toString().replace("." , ",") };
 
             let tblOut = document.getElementById('stat');
-            tblOut.innerHTML = ""
+
             tblOut.innerHTML = `
                 ${res_subj_q.map(s => {
                     let c_s_def = subjects.def[subjects.ids[s.s_id]];
