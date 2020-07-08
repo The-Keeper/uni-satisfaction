@@ -118,15 +118,21 @@
 
             console.log(inputs)
 
-            const arr_avg = numbers => numbers.reduce((acc, n) => acc + n) / numbers.length;
+            const arr_avg = numbers => {
+                let mean = 0
+                if (numbers.length > 0) {
+                    mean = numbers.reduce((acc, n) => acc + n, 0) / numbers.length; 
+               }
+               return mean;
+            }
 
             const standardDeviation_avg = numbers => {
-                let mean = numbers[0]
+                numbers = numbers.filter(n => n)        // выбраковка пустых элементов
+                let mean = arr_avg(numbers)
                 let std_dev = 0
                 if (numbers.length>1) {
-                    mean = numbers.reduce((acc, n) => acc + n) / numbers.length;
                     std_dev = Math.sqrt(
-                        numbers.reduce((acc, n) => (n - mean) ** 2) / (numbers.length - 1)
+                            numbers.reduce((acc, n) => (n - mean) ** 2) / (numbers.length - 1)
                         )
                     }
                 return [
@@ -263,23 +269,32 @@
                     res_subj_q[current_s_idx].q.push({w_tick, satisf})
                 }
             }
-            console.log(res_subj_q)
-            console.log(res_crit_s)
+            console.log('res_subj_q', res_subj_q)
+            console.log('res_crit_s', res_crit_s)
 
 
-            function f_p(num) {return num.toFixed(presc).toString().replace("." , ",") };
+            function f_p(num) {
+                if (num !== undefined)
+                    return num.toFixed(presc).toString().replace("." , ",")
+                else
+                    return ""
+                };
 
             tblOut.innerHTML = `
-                ${res_subj_q.map(s => {
+                ${
+                res_subj_q.map(s => {
                     let c_s_def = subjects.def[subjects.ids[s.s_id]];
 
                     let crit_satis_list = []
                     for (let c_i = 0; c_i < criteria.def.length; c_i++) {
                         crit_satis_list[c_i] = []
-                        s.q.map(q_e => crit_satis_list[c_i].push(q_e.satisf[c_i]))
+                        s.q.map(q_e => { crit_satis_list[c_i].push(q_e.satisf[c_i])})
                     } 
                     let [sum_avg, sum_std_dev] = standardDeviation_avg(crit_satis_list.flat())
 
+                    if (crit_satis_list.length == 0) {
+                        print('NULL');
+                    }
                     /*
                     satisf_mean_list.push(sum_avg)
                     satisf_sigma_lst.push(sum_std_dev)
@@ -287,7 +302,10 @@
                     return `<tr><td>${c_s_def.name}</td>
                     ${crit_satis_list.map(c_e => {
                         let [avg, std_dev] = standardDeviation_avg(c_e)
-                        return `<td>${f_p(avg)}±${f_p(std_dev)}</td>`
+                        if (avg)
+                            return `<td>${f_p(avg)}±${f_p(std_dev)}</td>`
+                        else
+                            return `<td></td>`
                     }).join('')}<td>${f_p(sum_avg)}</td><td>${f_p(sum_std_dev)}</td>
                     </tr>`
                 }).join('')}
