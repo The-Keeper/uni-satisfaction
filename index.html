@@ -34,6 +34,7 @@
 		
         <div id="output">
             <table id="stat"></table>
+            <div id="summary"></div>
         </div>
 
 		<script>
@@ -63,11 +64,13 @@
                 readFile(0);
             }
             
-            let fileInput = document.getElementById("input_files")
-            let btnRefresh = document.getElementById("btnRefresh")
-			let btnExport  = document.getElementById("btnExport")
-			let output	   = document.getElementById("output")
-            let tblOut = document.getElementById('stat');
+            let fileInput   = document.getElementById("input_files")
+            let btnRefresh  = document.getElementById("btnRefresh")
+			let btnExport   = document.getElementById("btnExport")
+			let output	    = document.getElementById("output")
+            let tblOut      = document.getElementById('stat');
+            let tblOutSumm  = document.getElementById('summary');
+
 
 
             function Refresh() {
@@ -280,6 +283,7 @@
                     return ""
                 };
 
+            let data_summary = {}       // данные для выводов по анализу
             tblOut.innerHTML = `
                 ${
                 res_subj_q.map(s => {
@@ -295,16 +299,31 @@
                     if (crit_satis_list.length == 0) {
                         print('NULL');
                     }
-                    /*
-                    satisf_mean_list.push(sum_avg)
-                    satisf_sigma_lst.push(sum_std_dev)
-                    */
+
+
+                    let current_line_list = crit_satis_list.map(c_e => {
+                        let [avg, std_dev] = standardDeviation_avg(c_e);
+                        return {'avg': avg, 'sigma': std_dev}
+                    })
+
+                    let avgs = current_line_list.map(i => i.avg);
+
+                    let maxArrIndex = arr => arr.reduce((bestIndexSoFar, currentlyTestedValue, currentlyTestedIndex, array)  => 
+                        currentlyTestedValue > array[bestIndexSoFar] ? currentlyTestedIndex : bestIndexSoFar, 0);
+                    let minArrIndex = arr => arr.reduce((bestIndexSoFar, currentlyTestedValue, currentlyTestedIndex, array) =>
+                        currentlyTestedValue < array[bestIndexSoFar] ? currentlyTestedIndex : bestIndexSoFar, 0);
+
+                    let min_id = minArrIndex(avgs)
+                    let max_id = maxArrIndex(avgs)
+
+                    data_summary[s.s_id] = {'min': avgs[min_id], 'min_id': min_id, 'max': avgs[max_id], 'max_id': max_id}
+
+
                     return `<tr><td>${c_s_def.name}</td>
-                    ${crit_satis_list.map(c_e => {
-                        let [avg, std_dev] = standardDeviation_avg(c_e)
-                        if (avg)
-                            return `<td>${f_p(avg)}±${f_p(std_dev)}</td>`
-                        else
+                    ${current_line_list.map(c_e => {
+                        if (c_e.avg) {
+                            return `<td>${f_p(c_e.avg)}±${f_p(c_e.sigma)}</td>`
+                        } else 
                             return `<td></td>`
                     }).join('')}<td>${f_p(sum_avg)}</td><td>${f_p(sum_std_dev)}</td>
                     </tr>`
@@ -321,6 +340,20 @@
                     return `<td>${f_p(arr_avg(e))}</td>`
                 }).join('')}<td><b>${f_p(arr_avg(res_crit_w.flat()))}</b></td></tr>
             `
+
+            console.log('Criteria', criteria)
+            console.log('Disciplines', subjects)
+            console.log(inputs)
+
+            tblOutSumm.innerHTML = `
+            <h3>Выводы по анализу удовлетворенности</h3>
+            ${Object.keys(data_summary).map(d_id => {
+                return `<p>По дисциплине «${d_id}» наибольшее значение удовлетворённости наблюдается по критерию 
+                        «${criteria.def[data_summary[d_id].max_id].name}»: ${f_p(data_summary[d_id].max)}, наименьшее — по критерию
+                        «${criteria.def[data_summary[d_id].min_id].name}»: ${f_p(data_summary[d_id].min)}. </p>`
+                }).join('')
+            }
+            `
         }
 
 
@@ -331,8 +364,9 @@
 
 			let sheet_id = workbooks[0]["Workbook"]["Sheets"][0]["name"];
 			let sheet = workbooks[0]["Sheets"][sheet_id];
-            let criteria_name_offset = inputs.criteria_name_offset ? inputs.criteria_name_offset == "" : ZERO_OFFSET
-            let subjects_name_offset = inputs.subjects_name_offset ? inputs.subjects_name_offset == "" : ZERO_OFFSET
+            let criteria_name_offset = inputs.criteria_name_offset ? {'c': parseInt(inputs.criteria_name_offset[0]), 'r': parseInt(inputs.criteria_name_offset[1])} : ZERO_OFFSET
+            let subjects_name_offset = inputs.subjects_name_offset ? {'c': parseInt(inputs.subjects_name_offset[0]), 'r': parseInt(inputs.subjects_name_offset[1])} : ZERO_OFFSET
+            console.log('OFFSETS', criteria_name_offset, subjects_name_offset)
 			let criteria    = getVarRangeFromHeader(sheet, inputs.criteria_range, ZERO_OFFSET, criteria_name_offset);
             let subjects    = getVarRangeFromHeader(sheet, inputs.subjects_range, ZERO_OFFSET, subjects_name_offset)
 
