@@ -379,7 +379,7 @@
                     return out;
                 }
                 if (data_summary[d_id].min == data_summary[d_id].max) 
-                    return `<p>По дисциплине «${d_id}» удовлетворённость по всем критериям одинакова.</p>`
+                    return `<p>По дисциплине «${d_id}» удовлетворённость по всем критериям одинакова: ${f_p(data_summary[d_id].max)}.</p>`
                  else
                 return `<p>По дисциплине «${d_id}» наибольшее значение удовлетворённости наблюдается 
                     ${critIDtoRes(data_summary[d_id].max_id)}:  ${f_p(data_summary[d_id].max)}; 
