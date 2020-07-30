@@ -22,6 +22,11 @@
                 <option value="s,w">сначала баллы, потом веса</option>
               </select></td></tr>
               <tr><td>Вывод: число знаков после запятой</td><td><input value="2" class="rem" id="input_presc"></td></tr>
+              <tr><td>Вывод: формат</td><td><select class="rem" id="input_output_format">
+                <option value="m">средневзвешенный балл</option>
+                <option value="p10">% (балл × 10)</option>
+                <option value="p100">% (балл × 100)</option>
+              </select></td></tr>
 
             <tr><td>Файлы анкет для обработки</td><td><input id="input_files" type="file" multiple /></td></tr>
         </table>
@@ -299,6 +304,24 @@
                 return res;
             }
 
+            function f_value(num, percent=false) {
+                switch (inputs.output_format) {
+                    case "p10":
+                        num *= 10;
+                        break;
+                    case "p100":
+                        num *= 100;
+                        break;
+                    default:
+                        percent = false;                      
+                }
+                let res = f_p(num) 
+                if (percent) 
+                    res += "%"
+                return res
+            }
+
+            /* возвращает отформатированное число num с точностью до presc знаков после запятой */
             function f_p(num) {
                 if (num !== undefined)
                     return num.toFixed(presc).toString().replace("." , ",")
@@ -341,10 +364,10 @@
                     return `<tr><td>${c_s_def.name}</td>
                     ${current_line_list.map(c_e => {
                         if (c_e.avg) {
-                            return `<td>${f_p(c_e.avg)}±${f_p(c_e.sigma)}</td>`
+                            return `<td>${f_value(c_e.avg, true)}±${f_value(c_e.sigma)}</td>`
                         } else 
                             return `<td></td>`
-                    }).join('')}<td>${f_p(sum_avg)}</td><td>${f_p(sum_std_dev)}</td>
+                    }).join('')}<td>${f_value(sum_avg, true)}</td><td>${f_value(sum_std_dev)}</td>
                     </tr>`
                 }).join('')}
                 <tr><td><b>Удовлетворенность по критерию ± среднее квадратическое отклонение</b></td>${
@@ -353,8 +376,8 @@
                     satisf_mean_list.push(avg)
                     satisf_sigma_lst.push(std_dev)
 
-                    return `<td>${f_p(avg)}±${f_p(std_dev)}</td>`
-                }).join('')} <td><b>${f_p(arr_avg(satisf_mean_list))}</b></td><td><b>${f_p(arr_avg(satisf_sigma_lst))}</b></td> </tr>
+                    return `<td>${f_value(avg, true)}±${f_value(std_dev)}</td>`
+                }).join('')} <td><b>${f_value(arr_avg(satisf_mean_list),true)}</b></td><td><b>${f_value(arr_avg(satisf_sigma_lst))}</b></td> </tr>
                 <tr><td><b>Вес критерия</b></td>${res_crit_w.map(e => {
                     return `<td>${f_p(arr_avg(e))}</td>`
                 }).join('')}<td><b>${f_p(arr_avg(res_crit_w.flat()))}</b></td></tr>
@@ -379,11 +402,11 @@
                     return out;
                 }
                 if (data_summary[d_id].min == data_summary[d_id].max) 
-                    return `<p>По дисциплине «${d_id}» удовлетворённость по всем критериям одинакова: ${f_p(data_summary[d_id].max)}.</p>`
+                    return `<p>По дисциплине «${d_id}» удовлетворённость по всем критериям одинакова: ${f_value(data_summary[d_id].max, true)}.</p>`
                  else
                 return `<p>По дисциплине «${d_id}» наибольшее значение удовлетворённости наблюдается 
-                    ${critIDtoRes(data_summary[d_id].max_id)}:  ${f_p(data_summary[d_id].max)}; 
-                    наименьшее — ${critIDtoRes(data_summary[d_id].min_id)}: ${f_p(data_summary[d_id].min)}. </p>`
+                    ${critIDtoRes(data_summary[d_id].max_id)}:  ${f_value(data_summary[d_id].max, true)}; 
+                    наименьшее — ${critIDtoRes(data_summary[d_id].min_id)}: ${f_value(data_summary[d_id].min, true)}. </p>`
              }).join('')
             }
             `
@@ -454,10 +477,8 @@
 		   url = URL.createObjectURL(blob);
 		   link = document.createElement('A');
 		   link.href = url;
-		   link.download = 'Document';  // default name without extension 
-		   //document.body.appendChild(link);
-		   link.click();  // other browsers
-		   //document.body.removeChild(link);
+		   link.download = 'Вывод.doc'; 
+		   link.click();  
 		 };
 
 		 function triggerExport() {
