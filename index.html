@@ -12,6 +12,7 @@
         </style>
     </head>
     <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+    <script src="formatting.js"></script>
     <script src="common.js"></script>
 	<body>
                
@@ -27,6 +28,7 @@
                 <option value="m">средневзвешенный балл</option>
                 <option value="p10">% (балл × 10)</option>
                 <option value="p100">% (балл × 100)</option>
+                <option value="dist">оценка — %, средние — баллы</option>
               </select></td></tr>
 
             <tr><td>Файлы анкет для обработки</td><td><input id="input_files" type="file" multiple /></td></tr>
@@ -197,13 +199,7 @@
                 return res
             }
 
-            /* возвращает отформатированное число num с точностью до presc знаков после запятой */
-            function f_p(num) {
-                if (num !== undefined)
-                    return num.toFixed(presc).toString().replace("." , ",")
-                else
-                    return ""
-                };
+            let FM = inputs.output_format;
 
             let data_summary = {}       // данные для выводов по анализу
             tblOut.innerHTML = `
@@ -240,7 +236,7 @@
                     return `<tr><td>${c_s_def.name}</td>
                     ${current_line_list.map(c_e => {
                         if (c_e.avg) {
-                            return `<td>${f_value(c_e.avg, true)}±${f_value(c_e.sigma)}</td>`
+                            return `<td>${FORM[FM]['disc'](c_e.avg)}±${FORM[FM]['disc_sigma'](c_e.sigma)}</td>`
                         } else 
                             return `<td></td>`
                     }).join('')}<td>${f_value(sum_avg, true)}</td><td>${f_value(sum_std_dev)}</td>
@@ -278,22 +274,20 @@
                     return out;
                 }
                 if (data_summary[d_id].min == data_summary[d_id].max) 
-                    return `<p>По дисциплине «${d_id}» удовлетворённость по всем критериям одинакова: ${f_value(data_summary[d_id].max, true)}.</p>`
+                    return `<p>По дисциплине «${d_id}» удовлетворённость по всем критериям одинакова: ${FORM[FM]['disc'](data_summary[d_id].max, true)}.</p>`
                  else
                 return `<p>По дисциплине «${d_id}» наибольшее значение удовлетворённости наблюдается 
-                    ${critIDtoRes(data_summary[d_id].max_id)}:  ${f_value(data_summary[d_id].max, true)}; 
-                    наименьшее — ${critIDtoRes(data_summary[d_id].min_id)}: ${f_value(data_summary[d_id].min, true)}. </p>`
+                    ${critIDtoRes(data_summary[d_id].max_id)}:  ${FORM[FM]['disc'](data_summary[d_id].max, true)}; 
+                    наименьшее — ${critIDtoRes(data_summary[d_id].min_id)}: ${FORM[FM]['disc'](data_summary[d_id].min, true)}. </p>`
              }).join('')
             }
             `
         }
 
-
-
         function main() {
          //   console.log(workbooks)
             let keys_order = inputs.keys_order
-            let presc = inputs.presc;
+            presc = inputs.presc;
 
 			let sheet_id = workbooks[0]["Workbook"]["Sheets"][0]["name"];
 			let sheet = workbooks[0]["Sheets"][sheet_id];
