@@ -43,9 +43,8 @@ function getVarRangeFromHeader(sheet, str_range, id_offset, name_offset) {
     for (i.c = range.s.c; i.c <= range.e.c; ++i.c) {
         for (i.r = range.s.r; i.r <= range.e.r; ++i.r) {
             let data = sheet[XLSX.utils.encode_cell(i)];
-            console.log(data, i)
 
-            if (data) {
+            if (data && data.v) {
                 counter++;
                 let new_def = { 's': i[variable_dimension] };
                 new_def.id = id_offset
