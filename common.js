@@ -95,6 +95,9 @@ function readWSData(sheet, criteria, subjects, keys_order) {
                 let value = 0
                 try {
                     value = parseInt(sheet[XLSX.utils.encode_cell(i)].v)
+                    if (value === 0) {
+                        value = 1;
+                    }
                 } catch {
                     /*...*/
                 } 
