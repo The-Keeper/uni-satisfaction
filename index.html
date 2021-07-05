@@ -30,6 +30,11 @@
                 <option value="p100">% (балл × 100)</option>
                 <option value="dist">оценка — %, средние — баллы</option>
               </select></td></tr>
+              <tr><td>Значение нулевого поля</td><td><select class="rem" id="input_zero_value">
+                <option value="0">никакой</option>
+                <option value="1">1</option>
+                <option value="10">10</option>
+              </select></td></tr>
 
             <tr><td>Файлы анкет для обработки</td><td><input id="input_files" type="file" multiple /></td></tr>
         </table>
@@ -304,7 +309,7 @@
             for (let wb of workbooks) {
                 let sheet_id = wb["Workbook"]["Sheets"][0]["name"];
                 let sheet = wb["Sheets"][sheet_id];
-                data_array.push(readWSData(sheet,criteria,subjects,keys_order))
+                data_array.push(readWSData(sheet,criteria,subjects,keys_order,inputs.zero_value))
             }
            console.log('DATA ARRAY', data_array)
 

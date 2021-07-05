@@ -68,7 +68,7 @@ function getVarRangeFromHeader(sheet, str_range, id_offset, name_offset) {
     return res;
 }
 
-function readWSData(sheet, criteria, subjects, keys_order) {
+function readWSData(sheet, criteria, subjects, keys_order, zero_value) {
     if (criteria.variable_dimension !== subjects.variable_dimension) {
 
         let reversed_addr = criteria.variable_dimension==='r';
@@ -95,7 +95,7 @@ function readWSData(sheet, criteria, subjects, keys_order) {
                 try {
                     value = parseInt(sheet[XLSX.utils.encode_cell(i)].v)
                     if (value === 0) {
-                        value = 1;
+                        value = zero_value;
                     }
                 } catch {
                     /*...*/
