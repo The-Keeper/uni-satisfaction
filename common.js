@@ -9,7 +9,7 @@ const arr_avg = numbers => {
 }
 
 const standardDeviation_avg = numbers => {
-    numbers = numbers.filter(n => n)        // выбраковка пустых элементов
+    numbers = numbers.filter(n => n).map(Number)        // выбраковка пустых элементов
     let mean = arr_avg(numbers)
     let std_dev = 0
     if (numbers.length>1) {
